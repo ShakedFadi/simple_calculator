@@ -19,6 +19,7 @@ import openpyxl # For writing and reading .xlsx log file
 #from email.mime.text import MIMEText
 #import sendgrid
 import yagmail
+import getpass
 
 # Functions ############################################################################
 
@@ -185,17 +186,23 @@ header=1
 ct=2
 co=3
 cr=4
+c = 1
 
 for t,o,r in zip(correct_option_selects_time,correct_option_selects_option, correct_option_selects_result):
-    ws1.cell(row=header, column=(ct+correct_option_selects_time.index(t))).value = "Correct Option Time %s" %(correct_option_selects_time.index(t)+1)
-    ws1.cell(row=header, column=(co+correct_option_selects_option.index(o))).value = "Correct Option Name %s" %(correct_option_selects_option.index(o)+1)
-    ws1.cell(row=header, column=(cr+correct_option_selects_result.index(r))).value = "Correct Option Result %s" %(correct_option_selects_result.index(r)+1)
+    ws1.cell(row=header, column=(ct+correct_option_selects_time.index(t))).value = "Correct Option Time %s" %(correct_option_selects_time.index(t)+c)
+    ws1.cell(row=header, column=(co+correct_option_selects_option.index(o))).value = "Correct Option Name %s" %(correct_option_selects_option.index(o)+c)
+    ws1.cell(row=header, column=(cr+correct_option_selects_result.index(r))).value = "Correct Option Result %s" %(correct_option_selects_result.index(r)+c)
     ws1.cell(row=row_count, column=(ct+correct_option_selects_time.index(t))).value = t
     ws1.cell(row=row_count, column=(co+correct_option_selects_option.index(o))).value = o
     ws1.cell(row=row_count, column=(cr+correct_option_selects_result.index(r))).value = r
     ct+=2
     co+=2
     cr+=2
+    c+=1
+    correct_option_selects_time.remove(t)
+    correct_option_selects_option.remove(o)
+    correct_option_selects_result.remove(r)
+
 
 
 last = ws1.get_highest_column()
@@ -211,8 +218,7 @@ else:
 
 
 wb.save(filename=log_file)
-print correct_option_selects_time
-print len(correct_option_selects_time)
+
 # Sending Email with logging ############################################################################
 
 def send_loggings(u,p,st):
@@ -233,7 +239,8 @@ while True:
     if send_option == "Y":
         clear()
         mf = raw_input("Please enter email address you want your mail sent from: ")
-        mp = raw_input("Please enter password relative to email address above: ")
+        #mp = raw_input("Please enter password relative to email address above: ")
+        mp = getpass.getpass("Please enter password relative to email address above: ")
         mt = raw_input("Finally please enter email addres you want your mail sent to: ")
 
         send_loggings(mf, mp, mt)
