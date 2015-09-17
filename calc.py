@@ -5,17 +5,20 @@
 
 # Imports
 
-import datetime
+import datetime # For time logging
 # import time
 # import csv
 # import sys
-import os
+import os # For checking files & for clearing screen in terminal
 # import logging
 # import xlwt
 # import json
-import openpyxl
+import openpyxl # For writing and reading .xlsx log file
 #from openpyxl.cell import get_column_letter
-
+#import smtplib
+#from email.mime.text import MIMEText
+#import sendgrid
+import yagmail
 
 # Functions ############################################################################
 
@@ -48,7 +51,7 @@ start = []
 correct_option_selects_time = []
 correct_option_selects_option = []
 correct_option_selects_result = []
-
+end = []
 
 # Input ############################################################################
 
@@ -88,6 +91,7 @@ def main():
             elif user_input == 4:
                 o = "Multiply"
             while True:
+
                 try:
                     clear()
                     if user_input == 1:
@@ -144,7 +148,7 @@ Type 'y' for yes or 'n' for no: """).upper()
 
                 elif proceed == "N":
                     clear()
-                    print "Thank you for using our calculator!\nBye!\n"
+                    print "Thank you for using our calculator!\n"
                     return
 
                 else:
@@ -155,6 +159,8 @@ Type 'y' for yes or 'n' for no: """).upper()
 if __name__ == "__main__":
     main()
 
+e = datetime.datetime.now()
+end.append(e)
 
 # Excel logging ############################################################################
 
@@ -192,5 +198,60 @@ for t,o,r in zip(correct_option_selects_time,correct_option_selects_option, corr
     cr+=2
 
 
+last = ws1.get_highest_column()
+lastL = openpyxl.cell.get_column_letter(last)
+column_count = ws1.get_highest_column() + 1
+needed_col = openpyxl.cell.get_column_letter(column_count)
+
+if ws1[lastL+str(1)].value == "End":
+    ws1[lastL+str(row_count)] = end[0]
+else:
+    ws1[needed_col+str(1)] = "End"
+    ws1[needed_col+str(row_count)] = end[0]
+
+
 wb.save(filename=log_file)
+print correct_option_selects_time
+print len(correct_option_selects_time)
+# Sending Email with logging ############################################################################
+
+def send_loggings(u,p,st):
+
+    loggings_file = "calculator_loggings.xlsx"
+    body = """Oi we are sendign you attachment with Calculator Loggings, created by Ninja Calc!
+Check the data! :)"""
+
+    yag = yagmail.SMTP(u, p)
+    yag.send(to = st, subject ="Calculator Loggings on %s" %datetime.datetime.now().strftime("%A, %d.%m.%Y, %H:%M:%S"), contents = [body, loggings_file])
+
+
+while True:
+
+    send_option = raw_input("""Do you want your loggings to be send to an email address of your choice?
+    Type 'y' for yes or 'n' for no: """).upper()
+
+    if send_option == "Y":
+        clear()
+        mf = raw_input("Please enter email address you want your mail sent from: ")
+        mp = raw_input("Please enter password relative to email address above: ")
+        mt = raw_input("Finally please enter email addres you want your mail sent to: ")
+
+        send_loggings(mf, mp, mt)
+        clear()
+        print """Loggings of your chose calculator operations and history have been sent to listed email address!
+Have a nice day!\n"""
+        break
+
+
+    elif send_option == "N":
+        clear()
+        print """Thank you for using our calculator!
+Your results and loggings have been saved in calculator_loggings.xlsx file in simple_calculator foleder.
+Bye!\n"""
+        break
+
+    else:
+        clear()
+        print "You chose an invalid option!\nTry again!\n"
+        continue
 
